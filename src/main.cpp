@@ -8,19 +8,29 @@ struct detector{
 
 detector hausstrom;
 detector heizstrom;
+detector netz;
+detector einspeisung;
 
-int check(detector);
+const int detector_count = 4;
+
+detector* detectors[detector_count] = {
+  &hausstrom, &heizstrom, &netz, &einspeisung
+};
+
+int check(detector*);
 detector createDetector(int, String);
 
 void setup() {
   Serial.begin(9600);
 
+  heizstrom = createDetector(D0, "Heizstrom");
   hausstrom = createDetector(D1, "Hausstrom");
-  heizstrom = createDetector(D2, "Heizstrom");
+  netz = createDetector(D2, "Netz");
+  einspeisung = createDetector(D3, "Einspeisung");
 
-  pinMode(hausstrom.pin,INPUT);
-  pinMode(heizstrom.pin,INPUT);
-
+  for (int i = 0; i < detector_count; i++) {
+    pinMode(detectors[i]->pin, INPUT);
+  }
 }
 
 detector createDetector(int pin, String name) {
@@ -32,22 +42,22 @@ detector createDetector(int pin, String name) {
 }
 
 void loop() {
-
-  hausstrom.state = check(hausstrom);
-  heizstrom.state = check(heizstrom);
+  for (int i = 0; i < detector_count; i++) {
+    check(detectors[i]);
+  }
 }
 
-int check(detector strom){
+int check(detector* strom){
   int signal;
-  signal = digitalRead(strom.pin);
+  signal = digitalRead(strom->pin);
   
-  if (signal == HIGH && (strom.state == LOW)) {
-    Serial.println(strom.name);
-    strom.state = HIGH;
+  if (signal == HIGH && (strom->state == LOW)) {
+    Serial.println(strom->name);
+    strom->state = HIGH;
   } 
 
   if (signal == LOW) {
-    strom.state = LOW;
+    strom->state = LOW;
   }
-  return strom.state;
+  return strom->state;
 }
