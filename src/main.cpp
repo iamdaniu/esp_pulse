@@ -1,24 +1,24 @@
 #include <Arduino.h>
 
-struct detector{
-  int pin;
-  int state;
-  String name;
-};
+
+// add this file with const char* ssid and password definitions
+#include "secrets.h"
+
+#include "detector.h"
+#include "network.h"
+
 
 detector hausstrom;
 detector heizstrom;
 detector netz;
 detector einspeisung;
 
-const int detector_count = 4;
 
+const int detector_count = 4;
 detector* detectors[detector_count] = {
   &hausstrom, &heizstrom, &netz, &einspeisung
 };
 
-int check(detector*);
-detector createDetector(int, String);
 
 void setup() {
   Serial.begin(9600);
@@ -33,31 +33,11 @@ void setup() {
   }
 }
 
-detector createDetector(int pin, String name) {
-  detector result;
-  result.pin = pin;
-  result.state = LOW;
-  result.name = name;
-  return result;  
-}
 
 void loop() {
+  connectToWifi();
+
   for (int i = 0; i < detector_count; i++) {
     check(detectors[i]);
   }
-}
-
-int check(detector* strom){
-  int signal;
-  signal = digitalRead(strom->pin);
-  
-  if (signal == HIGH && (strom->state == LOW)) {
-    Serial.println(strom->name);
-    strom->state = HIGH;
-  } 
-
-  if (signal == LOW) {
-    strom->state = LOW;
-  }
-  return strom->state;
 }
