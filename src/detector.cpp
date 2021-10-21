@@ -1,7 +1,7 @@
 
 #include "detector.h"
 
-detector createDetector(int pin, String name) {
+detector createDetector(int pin, const char* name) {
   detector result;
   result.pin = pin;
   result.state = LOW;
@@ -9,17 +9,17 @@ detector createDetector(int pin, String name) {
   return result;  
 }
 
-int check(detector* strom){
-  int signal;
-  signal = digitalRead(strom->pin);
+bool hasFlashed(detector* strom){
+  int signal = digitalRead(strom->pin);
+  bool result = false;
   
   if (signal == HIGH && (strom->state == LOW)) {
-    Serial.println(strom->name);
+    result = true;
     strom->state = HIGH;
   } 
 
   if (signal == LOW) {
     strom->state = LOW;
   }
-  return strom->state;
+  return result;
 }

@@ -1,18 +1,17 @@
 #include <Arduino.h>
 
 
-// add this file with const char* ssid and password definitions
-#include "secrets.h"
-
 #include "detector.h"
 #include "network.h"
-
+#include "log.h"
+#include "secrets.h"
 
 detector hausstrom;
 detector heizstrom;
 detector netz;
 detector einspeisung;
 
+void sendImpulse(detector*);
 
 const int detector_count = 4;
 detector* detectors[detector_count] = {
@@ -21,12 +20,12 @@ detector* detectors[detector_count] = {
 
 
 void setup() {
-  Serial.begin(9600);
+  initLog();
 
-  heizstrom = createDetector(D0, "Heizstrom");
-  hausstrom = createDetector(D1, "Hausstrom");
-  netz = createDetector(D2, "Netz");
-  einspeisung = createDetector(D3, "Einspeisung");
+  hausstrom = createDetector(D0, "Hausstrom");
+  heizstrom = createDetector(D1, "Heizstrom");
+  netz = createDetector(D5, "Netz");
+  einspeisung = createDetector(D6, "Einspeisung");
 
   for (int i = 0; i < detector_count; i++) {
     pinMode(detectors[i]->pin, INPUT);
@@ -38,6 +37,16 @@ void loop() {
   connectToWifi();
 
   for (int i = 0; i < detector_count; i++) {
-    check(detectors[i]);
+    if (hasFlashed(detectors[i])) {
+      sendImpulse(detectors[i]);
+    }
   }
+}
+
+void sendImpulse(detector* sendFor) {
+  char* url = new char[128];
+  sprintf(url, "http://%s:%d/sensor/%s/impulse", targetHost, targetPort, sendFor->name);
+  logln(url);
+  sendPut(url);
+  delete url;
 }

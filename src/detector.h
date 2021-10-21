@@ -8,11 +8,11 @@
 struct detector{
   int pin;
   int state;
-  String name;
+  const char* name;
 };
 
-detector createDetector(int, String);
-int check(detector*);
+detector createDetector(int, const char*);
+bool hasFlashed(detector*);
 
 
 #endif
